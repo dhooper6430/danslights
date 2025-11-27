@@ -1,0 +1,126 @@
+import requests
+import csv
+import time
+import schedule
+import gspread
+import os
+import logging
+from datetime import datetime
+
+# --- Configuration ---
+DEVICE_URL = "http://192.168.100.80/turnip_data_log/data?format=csv&mark_discontinuities=0"
+SHEET_NAME = "DansLights Data" # The exact name of your Google Sheet
+CREDENTIALS_FILE = "credentials.json"
+STATE_FILE = "last_upload_state.txt"
+
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("collector.log"),
+        logging.StreamHandler()
+    ]
+)
+
+def get_last_recorded_timestamp():
+    """Reads the last uploaded timestamp from a local file."""
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, "r") as f:
+            try:
+                return float(f.read().strip())
+            except ValueError:
+                return 0
+    return 0
+
+def save_last_recorded_timestamp(ts):
+    """Saves the latest timestamp to a local file."""
+    with open(STATE_FILE, "w") as f:
+        f.write(str(ts))
+
+def fetch_and_process_data():
+    logging.info("Starting data collection cycle...")
+    
+    # 1. Connect to Google Sheets
+    try:
+        gc = gspread.service_account(filename=CREDENTIALS_FILE)
+        sh = gc.open(SHEET_NAME)
+        worksheet = sh.get_worksheet(0) # Opens the first tab
+    except Exception as e:
+        logging.error(f"Failed to connect to Google Sheets: {e}")
+        return
+
+    # 2. Fetch Data from Device
+    try:
+        response = requests.get(DEVICE_URL, timeout=10)
+        response.raise_for_status()
+        decoded_content = response.content.decode('utf-8')
+    except Exception as e:
+        logging.error(f"Failed to fetch data from device: {e}")
+        return
+
+    # 3. Parse CSV
+    # Assuming device returns: timestamp, value, ... (NO HEADERS based on your previous info)
+    # If it HAS headers, we might need next(reader)
+    csv_reader = csv.reader(decoded_content.splitlines(), delimiter=',')
+    
+    new_rows = []
+    last_ts = get_last_recorded_timestamp()
+    max_ts_in_batch = last_ts
+
+    for row in csv_reader:
+        if not row: continue # Skip empty lines
+        
+        try:
+            # Adjust indices if your CSV format is different!
+            # Based on previous snippet: Col 0 = Unix Timestamp, Col 1 = Count
+            ts_raw = float(row[0])
+            count = int(row[1])
+            
+            # Optional: Col 2 = Date string, but we can generate it if needed
+            # date_str = row[2] if len(row) > 2 else datetime.fromtimestamp(ts_raw).strftime('%Y-%m-%d %H:%M:%S')
+
+            if ts_raw > last_ts:
+                # This is a NEW row
+                # We format it explicitly for the sheet
+                # Note: Google Sheets expects a list of lists
+                new_rows.append([ts_raw, count])
+                
+                if ts_raw > max_ts_in_batch:
+                    max_ts_in_batch = ts_raw
+
+        except (ValueError, IndexError) as e:
+            logging.warning(f"Skipping malformed row: {row} - {e}")
+            continue
+
+    # 4. Upload to Google Sheets
+    if new_rows:
+        logging.info(f"Found {len(new_rows)} new rows. Uploading...")
+        try:
+            # append_rows is more efficient than append_row loop
+            worksheet.append_rows(new_rows)
+            logging.info("Upload successful.")
+            
+            # 5. Update State
+            save_last_recorded_timestamp(max_ts_in_batch)
+            
+        except Exception as e:
+            logging.error(f"Failed to write to Google Sheets: {e}")
+    else:
+        logging.info("No new data found.")
+
+def main():
+    logging.info("Collector Service Started.")
+    
+    # Run once immediately on startup
+    fetch_and_process_data()
+
+    # Schedule every 5 minutes
+    schedule.every(5).minutes.do(fetch_and_process_data)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()

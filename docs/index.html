@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dan's Christmas Lights</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="hero">
+        <div class="container">
+            <h1>Dan's Lights</h1>
+            <p>How many people have visited</p>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- Live Graph Section -->
+        <section class="card monitor-section">
+            <div class="card-header">
+                <h2>Visitor Activity</h2>
+                <span class="status-indicator online">Live</span>
+            </div>
+            <div class="grafana-embed-container" id="chart-container">
+                <canvas id="visitorChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Stats Grid -->
+        <section class="stats-section">
+            <div class="grid">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h3>Est. Visitors (24h)</h3>
+                        <p class="stat-value" id="stat-24h">--</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h3>Peak Visitors (24h)</h3>
+                        <p class="stat-value" id="stat-peak">--</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h3>Est. Visitors (7d)</h3>
+                        <p class="stat-value" id="stat-7d">--</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h3>Est. Visitors (Total)</h3>
+                        <p class="stat-value" id="stat-total">--</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Description Section -->
+        <section class="description-section">
+            <div class="card">
+                <div class="card-body">
+                    <h2>About This Project</h2>
+                    <p>
+                        Welcome to the digital heartbeat of our Christmas light display. 
+                        This dashboard provides a real-time window into visitor activity, powered by a custom-built analytics engine.
+                    </p>
+                    <br>
+                    <p>
+                        We utilise a <a href="https://www.baldrickboard.com/en/boards/baldricksignals" target="_blank" style="color: var(--accent-color);">Baldrick Signals Board</a> 
+                        to anonymously detect the unique Wi-Fi signatures broadcast by mobile devices. 
+                        This raw telemetry is processed by a Raspberry Pi and visualised instantly, allowing us to gauge crowd density and share the excitement of the display with the world.
+                    </p>
+                    <br>
+                    <p style="font-size: 0.9rem; border-left: 3px solid var(--accent-color); padding-left: 10px; margin-top: 10px;">
+                        <strong>Privacy Notice:</strong> No personal data, MAC addresses, or device identifiers are stored. 
+                        The system strictly counts the volume of signals to estimate visitor numbers. "A phone passed by" is the only data point we retain.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Dan's Lights. Powered by <a href="https://xlights.org" target="_blank">xLights</a>, <a href="https://baldrickboard.com" target="_blank">Baldrick Boards</a>, <a href="https://github.com/FalconChristmas/fpp" target="_blank">Falcon Pi Player</a>, <a href="https://pixcontroller.com" target="_blank">Falcon Controllers</a> and <a href="https://kulplights.com" target="_blank">Kulp Lights</a>.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>
