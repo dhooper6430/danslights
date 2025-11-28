@@ -6,19 +6,25 @@ import gspread
 import os
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # --- Configuration ---
-DEVICE_URL = "http://192.168.100.80/turnip_data_log/data?format=csv&mark_discontinuities=0"
-SHEET_NAME = "DansLights Data" # The exact name of your Google Sheet
-CREDENTIALS_FILE = "credentials.json"
-STATE_FILE = "last_upload_state.txt"
+DEVICE_URL = os.getenv("DEVICE_URL", "http://192.168.100.80/turnip_data_log/data?format=csv&mark_discontinuities=0")
+SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "DansLights Data")
+CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
+STATE_FILE = os.getenv("STATE_FILE", "last_upload_state.txt")
+LOG_FILE = os.getenv("LOG_FILE", "collector.log")
+COLLECTION_INTERVAL = int(os.getenv("COLLECTION_INTERVAL_MINUTES", 5))
 
 # Configure Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("collector.log"),
+        logging.FileHandler(LOG_FILE),
         logging.StreamHandler()
     ]
 )
@@ -115,8 +121,8 @@ def main():
     # Run once immediately on startup
     fetch_and_process_data()
 
-    # Schedule every 5 minutes
-    schedule.every(5).minutes.do(fetch_and_process_data)
+    # Schedule every X minutes
+    schedule.every(COLLECTION_INTERVAL).minutes.do(fetch_and_process_data)
 
     while True:
         schedule.run_pending()

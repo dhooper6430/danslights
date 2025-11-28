@@ -12,23 +12,82 @@ Visit the live site to see current activity: [https://danslights.com](https://da
 ## Project Structure
 
 *   `docs/`: The public-facing website code (HTML/CSS/JS) for GitHub Pages.
-*   `device/`: The Python script responsible for collecting data from the Baldrick Signals Board and pushing it to Google Sheets.
+*   `device/`: The Python collector script. It polls the sensor device and uploads data to Google Sheets.
 
-### Device Setup
+---
 
-1.  **Google Cloud Credentials:**
-    *   Create a Google Cloud Project, enable the Google Sheets API, and create a Service Account. You can find detailed instructions [here](https://gspread.readthedocs.io/en/latest/oauth2.html#for-bots-applications).
-    *   Download the JSON key file for your Service Account and rename it to `credentials.json`. Place this file inside the `device/` folder.
-    *   **Crucial:** Share your Google Sheet (giving **Editor** access) with the email address found in your `credentials.json` file (it looks like `your-service-account-id@project-id.iam.gserviceaccount.com`).
-2.  **Python Virtual Environment:**
-    *   Navigate to the `device/` directory: `cd device`
-    *   Create a Python virtual environment: `python3 -m venv venv`
-    *   Activate the virtual environment: 
-        *   Linux/macOS: `source venv/bin/activate`
-        *   Windows PowerShell: `.\venv\Scripts\activate`
-3.  **Install Dependencies:**
-    *   With the virtual environment activated: `pip install -r requirements.txt`
-4.  **Run the Collector:**
-    *   With the virtual environment activated: `python collect.py`
-    *   The script will log its activity to `collector.log` in the same directory.
-    *   To run it continuously (e.g., on a Raspberry Pi), consider using `nohup python collect.py &` or a process manager like `systemd` or `supervisord`.
+## Device Collector Setup
+
+This section describes how to set up the data collector on a Raspberry Pi or similar Linux device.
+
+### 1. Prerequisites
+*   A Raspberry Pi (or any Linux server/computer) with Python 3.7+.
+*   Network access to the sensor device (default IP: `192.168.100.80`).
+*   A Google Cloud Service Account with Google Sheets API enabled.
+
+### 2. Installation
+
+Clone the repository and set up the Python environment:
+
+```bash
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/dans-lights.git
+cd dans-lights/device
+
+# Create and activate a virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 3. Configuration
+
+#### Environment Variables
+Copy the example configuration file and edit it:
+
+```bash
+cp .env.example .env
+nano .env
+```
+Update `DEVICE_URL`, `GOOGLE_SHEET_NAME`, and other settings in `.env` as needed.
+
+#### Google Sheets Credentials
+1.  Create a Google Cloud Project and enable the **Google Sheets API**.
+2.  Create a **Service Account** and download the JSON key file.
+3.  Rename the file to `credentials.json` and place it in the `device/` folder.
+4.  **Crucial:** Open your Google Sheet in the browser and **Share** it with the `client_email` address found inside `credentials.json` (give "Editor" access).
+
+### 4. Running the Collector
+
+**Manual Run (for testing):**
+```bash
+source venv/bin/activate
+python collect.py
+```
+
+**Automatic Background Service (Systemd):**
+To have the collector start automatically at boot (recommended for Raspberry Pi):
+
+1.  Edit `lights-collector.service` and ensure the paths and user (`User=dhooper`) match your setup.
+2.  Install the service:
+    ```bash
+    sudo cp lights-collector.service /etc/systemd/system/
+    sudo systemctl daemon-reload
+    sudo systemctl enable lights-collector
+    sudo systemctl start lights-collector
+    ```
+3.  Check logs:
+    ```bash
+    journalctl -u lights-collector -f
+    ```
+
+---
+
+## Website Development
+
+The `docs/` folder contains the source for the GitHub Pages site.
+
+*   **`index.html`**: Main dashboard entry point.
+*   **`js/main.js`**: Fetches data from the published Google Sheet (via CSV export link) and renders the charts.
