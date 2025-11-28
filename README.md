@@ -31,7 +31,7 @@ Clone the repository and set up the Python environment:
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/dans-lights.git
+git clone https://github.com/dhooper6430/dans-lights.git
 cd dans-lights/device
 
 # Create and activate a virtual environment
