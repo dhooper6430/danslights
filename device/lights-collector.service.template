@@ -4,15 +4,15 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-# Change 'pi' to your username if different (e.g., 'dhooper')
-User=dhooper
-Group=dhooper
+# User and Group needed to run the script
+User={{USER}}
+Group={{GROUP}}
 
 # Set the working directory so relative paths (logs, state file) work
-WorkingDirectory=/home/dhooper/gemini/lights/device
+WorkingDirectory={{WORKDIR}}
 
 # Use the Python executable from your virtual environment
-ExecStart=/home/dhooper/gemini/lights/device/venv/bin/python collect.py
+ExecStart={{VENV_PYTHON}} collect.py
 
 # Restart the service if it crashes
 Restart=always
