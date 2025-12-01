@@ -25,63 +25,51 @@ This section describes how to set up the data collector on a Raspberry Pi or sim
 *   Network access to the sensor device (default IP: `192.168.100.80`).
 *   A Google Cloud Service Account with Google Sheets API enabled.
 
-### 2. Installation
+### 2. Quick Installation (Automated)
 
-Clone the repository and set up the Python environment:
+We provide a helper script to set up the environment, dependencies, and background service automatically.
 
 ```bash
 # Clone the repo
 git clone https://github.com/dhooper6430/dans-lights.git
 cd dans-lights/device
 
-# Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Make the installer executable and run it
+chmod +x install.sh
+./install.sh
 ```
+
+The script will:
+*   Create a Python virtual environment (`venv`).
+*   Install required Python packages.
+*   Create a default `.env` configuration file.
+*   Generate and install the `lights-collector` systemd service for your user.
 
 ### 3. Configuration
 
-#### Environment Variables
-Copy the example configuration file and edit it:
+After running the installer, you must configure the device:
+
+1.  **Google Credentials:** Place your Google Service Account JSON key file in the `device/` folder and name it `credentials.json`.
+2.  **Environment Variables:** Edit the newly created `.env` file:
+    ```bash
+    nano .env
+    ```
+    *   Update `DEVICE_URL` if your sensor IP is different.
+    *   Update `GOOGLE_SHEET_NAME` if your target sheet has a different name.
+3.  **Share Sheet:** Open your Google Sheet in the browser and **Share** it with the `client_email` address found inside your `credentials.json` (give "Editor" access).
+
+### 4. Start the Service
+
+Once configured, start the background service:
 
 ```bash
-cp .env.example .env
-nano .env
-```
-Update `DEVICE_URL`, `GOOGLE_SHEET_NAME`, and other settings in `.env` as needed.
-
-#### Google Sheets Credentials
-1.  Create a Google Cloud Project and enable the **Google Sheets API**.
-2.  Create a **Service Account** and download the JSON key file.
-3.  Rename the file to `credentials.json` and place it in the `device/` folder.
-4.  **Crucial:** Open your Google Sheet in the browser and **Share** it with the `client_email` address found inside `credentials.json` (give "Editor" access).
-
-### 4. Running the Collector
-
-**Manual Run (for testing):**
-```bash
-source venv/bin/activate
-python collect.py
+sudo systemctl start lights-collector
 ```
 
-**Automatic Background Service (Systemd):**
-To have the collector start automatically at boot (recommended for Raspberry Pi):
-
-1.  Edit `lights-collector.service` and ensure the paths and user (`User=dhooper`) match your setup.
-2.  Install the service:
-    ```bash
-    sudo cp lights-collector.service /etc/systemd/system/
-    sudo systemctl daemon-reload
-    sudo systemctl enable lights-collector
-    sudo systemctl start lights-collector
-    ```
-3.  Check logs:
-    ```bash
-    journalctl -u lights-collector -f
-    ```
+**Useful Commands:**
+*   **Check Status:** `sudo systemctl status lights-collector`
+*   **View Logs:** `journalctl -u lights-collector -f`
+*   **Stop Service:** `sudo systemctl stop lights-collector`
 
 ---
 
