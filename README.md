@@ -31,8 +31,8 @@ We provide a helper script to set up the environment, dependencies, and backgrou
 
 ```bash
 # Clone the repo
-git clone https://github.com/dhooper6430/dans-lights.git
-cd dans-lights/device
+git clone https://github.com/dhooper6430/danslights.git
+cd danslights/device
 
 # Make the installer executable and run it
 chmod +x install.sh
