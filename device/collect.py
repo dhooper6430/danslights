@@ -6,17 +6,28 @@ import gspread
 import os
 import logging
 from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (robustly finding it in the script's dir)
+script_dir = Path(__file__).parent
+load_dotenv(dotenv_path=script_dir / '.env')
 
 # --- Configuration ---
-DEVICE_URL = os.getenv("DEVICE_URL", "http://192.168.100.80/turnip_data_log/data?format=csv&mark_discontinuities=0")
+# Allow setting just the IP, or the full URL
+DEVICE_IP = os.getenv("DEVICE_IP", "192.168.100.80")
+DEFAULT_URL_TEMPLATE = "http://{ip}/turnip_data_log/data?format=csv&mark_discontinuities=0"
+
+# Use DEVICE_URL if set, otherwise construct it from DEVICE_IP
+DEVICE_URL = os.getenv("DEVICE_URL")
+if not DEVICE_URL:
+    DEVICE_URL = DEFAULT_URL_TEMPLATE.format(ip=DEVICE_IP)
+
 SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "DansLights Data")
 CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
-STATE_FILE = os.getenv("STATE_FILE", "last_upload_state.txt")
-LOG_FILE = os.getenv("LOG_FILE", "collector.log")
+# Resolve relative paths for files to script directory
+STATE_FILE = os.getenv("STATE_FILE", str(script_dir / "last_upload_state.txt"))
+LOG_FILE = os.getenv("LOG_FILE", str(script_dir / "collector.log"))
 COLLECTION_INTERVAL = int(os.getenv("COLLECTION_INTERVAL_MINUTES", 5))
 
 # Configure Logging
