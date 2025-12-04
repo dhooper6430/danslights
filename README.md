@@ -12,17 +12,17 @@ Visit the live site to see current activity: [https://danslights.com](https://da
 ## Project Structure
 
 *   `docs/`: The public-facing website code (HTML/CSS/JS) for GitHub Pages.
-*   `device/`: The Python collector script. It polls the sensor device and uploads data to Google Sheets.
+*   `signals-collector/`: The Python collector script for the Baldrick Signals Board. It polls the device and uploads data to Google Sheets.
 
 ---
 
-## Device Collector Setup
+## Signals Collector Setup
 
-This section describes how to set up the data collector on a Raspberry Pi or similar Linux device.
+This section describes how to set up the `signals-collector` on a Raspberry Pi or similar Linux device to interface with the Baldrick Signals Board.
 
 ### 1. Prerequisites
 *   A Raspberry Pi (or any Linux server/computer) with Python 3.7+.
-*   Network access to the sensor device (default IP: `192.168.100.80`).
+*   Network access to the Baldrick Signals Board (default IP: `192.168.100.80`).
 *   A Google Cloud Service Account with Google Sheets API enabled.
 
 ### 2. Quick Installation (Automated)
@@ -32,7 +32,7 @@ We provide a helper script to set up the environment, dependencies, and backgrou
 ```bash
 # Clone the repo
 git clone https://github.com/dhooper6430/danslights.git
-cd danslights/device
+cd danslights/signals-collector
 
 # Make the installer executable and run it
 chmod +x install.sh
@@ -43,18 +43,18 @@ The script will:
 *   Create a Python virtual environment (`venv`).
 *   Install required Python packages.
 *   Create a default `.env` configuration file.
-*   Generate and install the `lights-collector` systemd service for your user.
+*   Generate and install the `signals-collector` systemd service for your user.
 
 ### 3. Configuration
 
-After running the installer, you must configure the device:
+After running the installer, you must configure the collector:
 
-1.  **Google Credentials:** Place your Google Service Account JSON key file in the `device/` folder and name it `credentials.json`.
+1.  **Google Credentials:** Place your Google Service Account JSON key file in the `signals-collector/` folder and name it `credentials.json`.
 2.  **Environment Variables:** Edit the newly created `.env` file:
     ```bash
     nano .env
     ```
-    *   Update `DEVICE_URL` if your sensor IP is different.
+    *   Update `DEVICE_IP` (default: 192.168.100.80).
     *   Update `GOOGLE_SHEET_NAME` if your target sheet has a different name.
 3.  **Share Sheet:** Open your Google Sheet in the browser and **Share** it with the `client_email` address found inside your `credentials.json` (give "Editor" access).
 
@@ -63,13 +63,13 @@ After running the installer, you must configure the device:
 Once configured, start the background service:
 
 ```bash
-sudo systemctl start lights-collector
+sudo systemctl start signals-collector
 ```
 
 **Useful Commands:**
-*   **Check Status:** `sudo systemctl status lights-collector`
-*   **View Logs:** `journalctl -u lights-collector -f`
-*   **Stop Service:** `sudo systemctl stop lights-collector`
+*   **Check Status:** `sudo systemctl status signals-collector`
+*   **View Logs:** `journalctl -u signals-collector -f`
+*   **Stop Service:** `sudo systemctl stop signals-collector`
 
 ---
 

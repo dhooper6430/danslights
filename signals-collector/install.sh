@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$SCRIPT_DIR"
 
-echo "--- Lights Collector Installer ---"
+echo "--- Signals Collector Installer ---"
 echo "Installing in: $SCRIPT_DIR"
 
 # 1. Setup Virtual Environment
@@ -24,14 +24,14 @@ echo "Installing requirements..."
 if [ ! -f ".env" ]; then
     echo "Creating .env from .env.example..."
     cp .env.example .env
-    echo "IMPORTANT: Please edit 'device/.env' and 'device/credentials.json' with your real configuration before starting the service."
+    echo "IMPORTANT: Please edit 'signals-collector/.env' and 'signals-collector/credentials.json' with your real configuration before starting the service."
 else
     echo ".env already exists. Skipping."
 fi
 
 # 4. Generate Systemd Service File
-SERVICE_NAME="lights-collector.service"
-TEMPLATE_FILE="lights-collector.service.template"
+SERVICE_NAME="signals-collector.service"
+TEMPLATE_FILE="signals-collector.service.template"
 TARGET_SERVICE_FILE="/tmp/$SERVICE_NAME"
 
 echo "Generating systemd service file..."
